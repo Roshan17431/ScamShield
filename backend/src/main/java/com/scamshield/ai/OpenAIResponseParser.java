@@ -3,6 +3,7 @@ package com.scamshield.ai;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scamshield.dto.ProtectionResponseDTO;
+import com.scamshield.dto.ChatResponseDTO;
 import com.scamshield.dto.ScamAnalysisResponseDTO;
 import com.scamshield.exception.OpenAIServiceException;
 import java.io.IOException;
@@ -113,6 +114,34 @@ public class OpenAIResponseParser {
                     HttpStatus.BAD_GATEWAY,
                     "OPENAI_RESPONSE_PARSE_FAILED",
                     "Unable to read the OpenAI protection advice response",
+                    exception
+            );
+        }
+    }
+
+    public ChatResponseDTO parseSafetyCoachAnswer(String responseBody) {
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            verifyCompleted(root, "Safety Coach response");
+
+            String outputText = findOutputText(root, "OpenAI could not generate a Safety Coach response");
+            if (!StringUtils.hasText(outputText)) {
+                throw malformedSafetyCoachResponse();
+            }
+
+            JsonNode structuredOutput = objectMapper.readTree(outputText);
+            return new ChatResponseDTO(readRequiredText(
+                    structuredOutput,
+                    "answer",
+                    this::malformedSafetyCoachResponse
+            ));
+        } catch (OpenAIServiceException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw new OpenAIServiceException(
+                    HttpStatus.BAD_GATEWAY,
+                    "OPENAI_RESPONSE_PARSE_FAILED",
+                    "Unable to read the OpenAI Safety Coach response",
                     exception
             );
         }
@@ -336,6 +365,14 @@ public class OpenAIResponseParser {
                 HttpStatus.BAD_GATEWAY,
                 "OPENAI_RESPONSE_PARSE_FAILED",
                 "Unable to read the OpenAI protection advice response"
+        );
+    }
+
+    private OpenAIServiceException malformedSafetyCoachResponse() {
+        return new OpenAIServiceException(
+                HttpStatus.BAD_GATEWAY,
+                "OPENAI_RESPONSE_PARSE_FAILED",
+                "Unable to read the OpenAI Safety Coach response"
         );
     }
 

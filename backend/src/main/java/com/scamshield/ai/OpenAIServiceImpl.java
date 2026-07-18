@@ -3,6 +3,7 @@ package com.scamshield.ai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scamshield.dto.EmailAnalysisRequestDTO;
+import com.scamshield.dto.ChatResponseDTO;
 import com.scamshield.dto.JobScamRequestDTO;
 import com.scamshield.dto.ProtectionRequestDTO;
 import com.scamshield.dto.ProtectionResponseDTO;
@@ -35,6 +36,8 @@ public class OpenAIServiceImpl implements OpenAIService {
     private final PromptBuilder promptBuilder;
 
     private final ProtectionPromptBuilder protectionPromptBuilder;
+
+    private final SafetyCoachPromptBuilder safetyCoachPromptBuilder;
 
     private final AdvancedPromptBuilder advancedPromptBuilder;
 
@@ -69,6 +72,16 @@ public class OpenAIServiceImpl implements OpenAIService {
                 responseParser::parseProtectionAdvice,
                 "protection advice",
                 "OpenAI could not generate protection advice"
+        );
+    }
+
+    @Override
+    public ChatResponseDTO answerSafetyCoachQuestion(String message) {
+        return executeRequest(
+                safetyCoachPromptBuilder.buildSafetyCoachRequest(config, message),
+                responseParser::parseSafetyCoachAnswer,
+                "Safety Coach response",
+                "OpenAI could not generate a Safety Coach response"
         );
     }
 

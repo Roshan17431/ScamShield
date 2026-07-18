@@ -43,3 +43,5 @@ ScamShield_Report.pdf
 .idea/usage.statistics.xml
 .idea/dictionaries/
 .idea/shelf/
+.vercel/
+.render/

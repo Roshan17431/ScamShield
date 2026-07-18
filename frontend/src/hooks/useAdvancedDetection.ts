@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useAnalysisHistory } from "../contexts/AnalysisHistoryContext";
 import {
   analyzeEmail,
   analyzeJobOffer,
@@ -12,12 +13,14 @@ import type {
   JobScamRequest,
   UrlAnalysisRequest
 } from "../types/api";
+import type { AnalysisSource } from "../types/history";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to complete advanced detection. Please try again.";
 
 type DetectionRequest = (signal: AbortSignal) => Promise<AdvancedDetectionResult>;
 
 export function useAdvancedDetection() {
+  const { addAnalysis } = useAnalysisHistory();
   const [result, setResult] = useState<AdvancedDetectionResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -31,7 +34,7 @@ export function useAdvancedDetection() {
     setIsAnalyzing(false);
   }, []);
 
-  const executeDetection = useCallback(async (request: DetectionRequest) => {
+  const executeDetection = useCallback(async (source: AnalysisSource, request: DetectionRequest) => {
     if (activeRequestRef.current) {
       return;
     }
@@ -46,6 +49,13 @@ export function useAdvancedDetection() {
       const response = await request(controller.signal);
       if (activeRequestRef.current === controller) {
         setResult(response);
+        addAnalysis({
+          source,
+          category: response.category,
+          riskLevel: response.riskLevel,
+          securityScore: response.securityScore,
+          summary: response.summary
+        });
       }
     } catch (error) {
       const wasCancelled = error instanceof AxiosError && error.code === "ERR_CANCELED";
@@ -60,20 +70,29 @@ export function useAdvancedDetection() {
         setIsAnalyzing(false);
       }
     }
-  }, []);
+  }, [addAnalysis]);
 
   const runUrlAnalysis = useCallback(
-    async (payload: UrlAnalysisRequest) => executeDetection((signal) => analyzeUrl(payload, signal)),
+    async (payload: UrlAnalysisRequest) => executeDetection(
+      "URL safety scan",
+      (signal) => analyzeUrl(payload, signal)
+    ),
     [executeDetection]
   );
 
   const runEmailAnalysis = useCallback(
-    async (payload: EmailAnalysisRequest) => executeDetection((signal) => analyzeEmail(payload, signal)),
+    async (payload: EmailAnalysisRequest) => executeDetection(
+      "Email scan",
+      (signal) => analyzeEmail(payload, signal)
+    ),
     [executeDetection]
   );
 
   const runJobAnalysis = useCallback(
-    async (payload: JobScamRequest) => executeDetection((signal) => analyzeJobOffer(payload, signal)),
+    async (payload: JobScamRequest) => executeDetection(
+      "Job offer scan",
+      (signal) => analyzeJobOffer(payload, signal)
+    ),
     [executeDetection]
   );
 

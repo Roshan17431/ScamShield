@@ -1,12 +1,14 @@
 import { AxiosError } from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useAnalysisHistory } from "../contexts/AnalysisHistoryContext";
 import { analyzeScamText } from "../services/scamAnalysisService";
 import type { ScamAnalysisResponse } from "../types/api";
 
 const ANALYSIS_ERROR_MESSAGE = "Unable to analyze the message. Please try again.";
 
 export function useScamAnalysis() {
+  const { addAnalysis } = useAnalysisHistory();
   const [analysis, setAnalysis] = useState<ScamAnalysisResponse | null>(null);
   const [analyzedText, setAnalyzedText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -40,6 +42,13 @@ export function useScamAnalysis() {
       if (activeRequestRef.current === controller) {
         setAnalysis(result);
         setAnalyzedText(normalizedText);
+        addAnalysis({
+          source: "Message analysis",
+          category: result.category,
+          riskLevel: result.riskLevel,
+          securityScore: 100 - result.scamProbability,
+          summary: result.summary
+        });
       }
     } catch (error) {
       const wasCancelled = error instanceof AxiosError && error.code === "ERR_CANCELED";
@@ -55,7 +64,7 @@ export function useScamAnalysis() {
         setIsAnalyzing(false);
       }
     }
-  }, []);
+  }, [addAnalysis]);
 
   useEffect(() => {
     return () => {

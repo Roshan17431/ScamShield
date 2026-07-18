@@ -9,6 +9,14 @@ export interface ApiErrorDetails {
   details: string[];
 }
 
+export interface ChatRequest {
+  message: string;
+}
+
+export interface ChatResponse {
+  answer: string;
+}
+
 export interface ExtractTextResponse {
   extractedText: string;
 }

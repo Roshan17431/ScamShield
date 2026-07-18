@@ -12,7 +12,7 @@ export default function Footer() {
         </div>
         <div className="flex items-center gap-2">
           <Lock size={16} aria-hidden="true" />
-          <span>We do not store screenshots in the frontend.</span>
+          <span>Analysis history stays in this browser, and screenshots are not stored in the frontend.</span>
         </div>
       </div>
     </footer>

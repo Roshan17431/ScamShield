@@ -109,6 +109,36 @@ class OpenAIResponseParserTest {
     }
 
     @Test
+    void parsesStructuredSafetyCoachAnswer() {
+        String responseBody = """
+                {
+                  "status": "completed",
+                  "output_text": "{\\"answer\\":\\"## Stay safe\\\\n\\\\n- Do not share your OTP.\\\\n- Contact your bank using its official number.\\"}"
+                }
+                """;
+
+        var response = parser.parseSafetyCoachAnswer(responseBody);
+
+        assertThat(response.answer()).isEqualTo(
+                "## Stay safe\n\n- Do not share your OTP.\n- Contact your bank using its official number."
+        );
+    }
+
+    @Test
+    void rejectsMalformedSafetyCoachAnswer() {
+        String responseBody = """
+                {
+                  "status": "completed",
+                  "output_text": "{\\"answer\\":\\"   \\"}"
+                }
+                """;
+
+        assertThatThrownBy(() -> parser.parseSafetyCoachAnswer(responseBody))
+                .isInstanceOf(OpenAIServiceException.class)
+                .hasMessage("Unable to read the OpenAI Safety Coach response");
+    }
+
+    @Test
     void parsesStructuredUrlAnalysis() {
         String responseBody = """
                 {

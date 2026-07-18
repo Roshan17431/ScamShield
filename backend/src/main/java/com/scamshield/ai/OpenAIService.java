@@ -1,6 +1,7 @@
 package com.scamshield.ai;
 
 import com.scamshield.dto.EmailAnalysisRequestDTO;
+import com.scamshield.dto.ChatResponseDTO;
 import com.scamshield.dto.JobScamRequestDTO;
 import com.scamshield.dto.ProtectionRequestDTO;
 import com.scamshield.dto.ScamAnalysisResponseDTO;
@@ -15,6 +16,8 @@ public interface OpenAIService {
     ScamAnalysisResponseDTO analyzeText(String text);
 
     ProtectionResponseDTO generateProtectionAdvice(ProtectionRequestDTO request);
+
+    ChatResponseDTO answerSafetyCoachQuestion(String message);
 
     AdvancedAiAnalysis analyzeUrls(List<String> urls, List<String> ruleFindings);
 

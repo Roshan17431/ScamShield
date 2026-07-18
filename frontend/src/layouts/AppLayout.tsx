@@ -1,20 +1,22 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Footer from "../components/Footer";
+import GlobalSearchDialog from "../components/GlobalSearchDialog";
 import Navbar from "../components/Navbar";
+import { useAppPreferences } from "../contexts/AppPreferencesContext";
 
-interface AppLayoutProps {
-  theme: "dark" | "light";
-  onToggleTheme: () => void;
-}
+export default function AppLayout() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { theme, toggleTheme } = useAppPreferences();
 
-export default function AppLayout({ theme, onToggleTheme }: AppLayoutProps) {
   return (
     <div className="app-shell">
-      <Navbar theme={theme} onToggleTheme={onToggleTheme} />
+      <Navbar theme={theme} onToggleTheme={toggleTheme} onOpenSearch={() => setIsSearchOpen(true)} />
       <main>
         <Outlet />
       </main>
       <Footer />
+      <GlobalSearchDialog isOpen={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </div>
   );
 }

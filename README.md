@@ -1,299 +1,186 @@
 # ScamShield AI
 
-Think Before You Click. Verify Before You Trust.
+**Think before you click. Verify before you trust.**
 
-ScamShield AI is a Phase 4 full-stack application for reviewing suspicious content before taking action. Users can extract screenshot text, assess suspicious messages, receive AI-powered protection guidance, and safely analyze URLs, emails, and job offers with deterministic checks plus GPT-5 Mini.
+ScamShield AI is a production-minded full-stack safety companion for reviewing suspicious messages, screenshots, links, emails, job offers, and online-payment situations. It combines deterministic checks with OpenAI's Responses API and GPT-5 Mini to provide explainable, safety-first guidance.
 
-## Features
+## Highlights
 
-- Premium responsive React interface with dark mode support
-- Screenshot upload with drag and drop, preview, replace, remove, and validation
-- PNG, JPG, and JPEG validation up to 10 MB
-- OpenAI Responses API vision request for OCR-only extraction
-- Editable extracted text with character count, copy, and clear actions
-- AI-powered scam analysis for extracted OCR text or pasted text
-- Structured risk level, scam probability, confidence, category, summary, explanation, and red flags
-- Animated risk meter, accessible loading state, request cancellation, and input locking while analysis runs
-- Personalized Protection Center with recommended actions, prevention tips, and similar scam examples
-- Editable Safe Reply Generator with one-click copy and regeneration
-- Professional scam report with copy and downloadable `ScamShield_Report.pdf` export
-- Advanced URL Safety Checker with HTTP/HTTPS, short-link, redirect, IP-address, and look-alike-domain checks
-- Email Scam Detection with sender, urgency, external-link, and sensitive-request indicators
-- Job Scam Detection for upfront-fee, unrealistic-salary, urgency, and suspicious-link signals
-- Unified 0–100 Security Score with animated threat-indicator badges
-- Spring Boot API with DTOs, services, validation, and global exception handling
-- Environment-only OpenAI configuration with no hardcoded keys
+- Screenshot OCR for PNG, JPG, and JPEG uploads up to 10 MB
+- Structured scam analysis with probability, risk, confidence, category, summary, explanation, and red flags
+- Personalized protection guidance, safe reply drafting, report copy, and PDF export
+- Advanced URL, email, and job-offer detection with deterministic signals and AI analysis
+- AI Safety Coach for phishing, OTP, UPI, QR, courier, job, investment, and family-safety questions
+- Scam Awareness Hub covering banking, UPI, QR, job, investment, courier, lottery, social media, OTP, and shopping scams
+- Browser-local analysis history with search, filtering, deletion, dashboard analytics, and privacy controls
+- Global search, system/light/dark themes, animation preference, keyboard access, focus states, contrast support, and responsive layouts
 
-## Tech Stack
+## Visual Tour
 
-**Frontend**
+Run the application locally and visit these complete product screens:
 
-- React 19
-- Vite
-- TypeScript
-- Tailwind CSS
-- React Router DOM
-- Axios
-- Framer Motion
-- Lucide React
-- React Hot Toast
-- jsPDF
-
-**Backend**
-
-- Java 21
-- Spring Boot 3.5+
-- Maven
-- Spring Web
-- Spring Validation
-- Lombok
-- Jackson
-- OpenAI Responses API
+| Screen | Route | Purpose |
+| --- | --- | --- |
+| Landing | `/` | Product introduction and core capabilities |
+| Dashboard | `/dashboard` | Local analysis metrics and activity timeline |
+| Workspace | `/app` | Screenshot OCR, message analysis, protection center, and report |
+| Advanced Detection | `/advanced` | URL, email, and job-offer analysis |
+| AI Safety Coach | `/coach` | Current-session safety Q&A with Markdown answers |
+| Awareness Hub | `/awareness` | Scam-pattern education and prevention tips |
+| Analysis History | `/history` | Searchable, filterable, browser-local analysis records |
+| Settings | `/settings` | Theme, motion, privacy, and version controls |
 
 ## Architecture
 
 ```text
-frontend/
-  src/
-    assets/       Generated project assets
-    components/   Reusable UI and advanced result components
-    hooks/        Upload, theme, OCR, scam analysis, protection, and advanced detection state
-    layouts/      Shared app shell
-    pages/        Landing, workspace, and advanced detection pages
-    services/     Axios API clients and backend analysis requests
-    types/        Shared TypeScript contracts
-    utils/        Browser-side validation, clipboard, and PDF report helpers
-
-backend/
-  src/main/java/com/scamshield/
-    ai/           OpenAI config, prompt builder, service, parser
-    config/       CORS and web config
-    controller/   REST endpoints
-    dto/          Response DTOs
-    exception/    Global error handling
-    model/        Domain models
-    service/      Application service interfaces
-    service/impl/ Application service implementations
-    util/         Validation utilities
+React + Vite client
+  ├─ Local-only preferences and analysis history
+  ├─ Axios API client
+  ├─ Lazy-loaded routes and reusable state hooks
+  └─ Accessible UI, PDF export, and safety education content
+                 │
+                 ▼
+Spring Boot API
+  ├─ DTO validation and global exception handling
+  ├─ OCR, analysis, protection, advanced detection, and chat services
+  ├─ Deterministic URL, email, and job-scam checks
+  └─ OpenAI Responses API client with strict JSON parsing
+                 │
+                 ▼
+OpenAI Responses API
+  └─ GPT-5 Mini, `store: false`, strict response schemas
 ```
 
-## API
+## Project Structure
 
-### OCR Extraction
-
-`POST /api/v1/ai/extract-text`
-
-Multipart form data:
-
-- `image`: PNG, JPG, or JPEG screenshot, maximum 10 MB
-
-Success response:
-
-```json
-{
-  "success": true,
-  "message": "Text extracted successfully",
-  "data": {
-    "extractedText": "Dear Customer, your SBI account has been blocked..."
-  }
-}
+```text
+ScamShield/
+├── backend/
+│   ├── src/main/java/com/scamshield/
+│   │   ├── ai/            OpenAI configuration, prompts, parsing, service client
+│   │   ├── controller/    REST endpoints
+│   │   ├── dto/           Request and response contracts
+│   │   ├── service/       Application services and implementations
+│   │   └── util/          Image, URL, domain, and rule-signal validation
+│   ├── Dockerfile         Production backend image
+│   └── .env.example       Safe environment-variable template
+├── frontend/
+│   ├── src/
+│   │   ├── components/    Shared cards, navigation, dialogs, and loading UI
+│   │   ├── contexts/      Local history and app preferences
+│   │   ├── data/          Awareness Hub content
+│   │   ├── hooks/         API, chat, upload, theme, and UI state hooks
+│   │   ├── pages/         Route-level screens
+│   │   ├── services/      Axios request services
+│   │   └── utils/         Clipboard, PDF, formatting, and validation helpers
+│   ├── .env.example       Public frontend variable template
+│   └── vercel.json        SPA route rewrite for Vercel
+├── render.yaml            Render backend Blueprint with secret-safe variables
+└── .gitignore             Prevents secrets, keys, build output, and local files
 ```
 
-### Scam Analysis
+## Technology Stack
 
-`POST /api/v1/scam/analyze`
-
-Request body:
-
-```json
-{
-  "text": "Dear customer, your SBI account has been blocked. Verify immediately at http://secure-bank-login.xyz"
-}
-```
-
-Success response:
-
-```json
-{
-  "success": true,
-  "message": "Message analyzed successfully",
-  "data": {
-    "riskLevel": "CRITICAL",
-    "scamProbability": 98,
-    "confidence": 96,
-    "category": "Banking Phishing",
-    "summary": "This message is highly likely to be a phishing attempt.",
-    "explanation": "The message impersonates a bank, creates urgency, and directs users to a suspicious website.",
-    "redFlags": ["Creates urgency", "Suspicious website"]
-  }
-}
-```
-
-### Protection Advice
-
-`POST /api/v1/scam/protection`
-
-Request body:
-
-```json
-{
-  "message": "Dear customer, your SBI account has been blocked. Verify immediately at http://secure-bank-login.xyz",
-  "riskLevel": "CRITICAL",
-  "category": "Banking Phishing",
-  "redFlags": [
-    "Creates urgency",
-    "Suspicious website",
-    "Requests account verification"
-  ]
-}
-```
-
-Success response:
-
-```json
-{
-  "success": true,
-  "message": "Protection advice generated successfully",
-  "data": {
-    "recommendedActions": [
-      "Do not click the link.",
-      "Use the bank's official website or number to verify the message.",
-      "Block and report the sender."
-    ],
-    "safeReply": "I will verify this independently through the official bank website.",
-    "preventionTips": [
-      "Banks do not request OTPs through unsolicited messages.",
-      "Type official website addresses directly into your browser."
-    ],
-    "similarScams": [
-      "Fake KYC Update",
-      "Account Suspension"
-    ],
-    "report": {
-      "riskLevel": "CRITICAL",
-      "category": "Banking Phishing",
-      "redFlags": ["Creates urgency"],
-      "recommendedActions": ["Do not click the link."],
-      "preventionTips": ["Type official website addresses directly into your browser."],
-      "generatedAt": "2026-07-19T00:00:00Z"
-    }
-  }
-}
-```
-
-The frontend combines this protection data with the Phase 2 analysis to render the Scam Report and export a professional PDF named `ScamShield_Report.pdf`.
-
-### URL Safety Checker
-
-`POST /api/v1/scam/url-analysis`
-
-The `url` field accepts one URL or pasted text containing multiple URLs. The backend extracts HTTP, HTTPS, short, and embedded URLs before performing deterministic and AI analysis.
-
-```json
-{
-  "url": "http://secure-bank-login.xyz"
-}
-```
-
-```json
-{
-  "success": true,
-  "message": "URL analyzed successfully",
-  "data": {
-    "analyzedUrls": ["http://secure-bank-login.xyz"],
-    "safe": false,
-    "securityScore": 18,
-    "riskLevel": "CRITICAL",
-    "category": "Phishing URL",
-    "confidence": 95,
-    "summary": "Highly suspicious phishing domain.",
-    "explanation": "The address combines unsafe transport with phishing-style domain signals.",
-    "reasons": ["Uses HTTP instead of HTTPS", "Potentially impersonates a known brand"],
-    "recommendation": "Do not open the URL. Visit the organization through a verified address instead.",
-    "threatIndicators": [{"label": "HTTP", "severity": "HIGH"}]
-  }
-}
-```
-
-### Email Scam Detection
-
-`POST /api/v1/scam/email-analysis`
-
-```json
-{
-  "sender": "support@sbi-security.xyz",
-  "subject": "Urgent Account Verification",
-  "body": "Click here immediately to keep your account active."
-}
-```
-
-The response includes `securityScore`, `riskLevel`, `category`, `confidence`, `summary`, `explanation`, `redFlags`, `recommendation`, and `threatIndicators`.
-
-### Job Scam Detection
-
-`POST /api/v1/scam/job-analysis`
-
-```json
-{
-  "message": "Congratulations! Earn Rs. 80,000 per month working only 2 hours daily. Registration fee Rs. 500."
-}
-```
-
-The response includes `securityScore`, `riskLevel`, `category`, `confidence`, `summary`, `explanation`, `redFlags`, `recommendation`, and `threatIndicators`.
-
-### Unified Security Score
-
-The score is safety-oriented: higher values are safer.
-
-| Security score | Risk level |
+| Area | Technologies |
 | --- | --- |
-| 0–20 | Critical |
-| 21–40 | High |
-| 41–60 | Medium |
-| 61–80 | Low |
-| 81–100 | Safe |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, React Router, Axios |
+| UI | Framer Motion, Lucide React, React Markdown, React Hot Toast, jsPDF |
+| Backend | Java 21, Spring Boot 3.5, Maven, Spring Validation, Jackson, Lombok |
+| AI | OpenAI Responses API with GPT-5 Mini and strict JSON schemas |
+| Deployment | Vercel for the frontend, Render Docker web service for the backend |
+
+## API Reference
+
+All successful endpoints return:
+
+```json
+{
+  "success": true,
+  "message": "Human-readable status",
+  "data": {}
+}
+```
+
+| Method | Endpoint | Request | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/health` | None | Deployment health check |
+| `POST` | `/api/v1/ai/extract-text` | Multipart `image` | OCR a supported screenshot |
+| `POST` | `/api/v1/scam/analyze` | `{ "text": "..." }` | Analyze a suspicious message |
+| `POST` | `/api/v1/scam/protection` | Analysis context | Generate safety steps and a report |
+| `POST` | `/api/v1/scam/url-analysis` | `{ "url": "..." }` | Analyze one or more URLs safely |
+| `POST` | `/api/v1/scam/email-analysis` | Sender, subject, body | Analyze a suspicious email |
+| `POST` | `/api/v1/scam/job-analysis` | `{ "message": "..." }` | Analyze a job offer |
+| `POST` | `/api/v1/chat` | `{ "message": "..." }` | Ask the AI Safety Coach |
+
+### AI Safety Coach
+
+`POST /api/v1/chat`
+
+```json
+{
+  "message": "What should I do if a caller asks for my OTP?"
+}
+```
+
+```json
+{
+  "success": true,
+  "message": "Safety Coach response generated",
+  "data": {
+    "answer": "## Stay safe\n\n- End the call.\n- Never share an OTP.\n- Contact the bank using the number on your card."
+  }
+}
+```
+
+The backend requests live OpenAI output; it does not contain mocked AI responses. The Safety Coach prompt rejects harmful assistance and instructs the model not to request credentials, OTPs, PINs, account numbers, or private links.
 
 ## Environment Variables
 
-Backend variables:
+Use the example files as local references, then add values outside Git:
 
 ```bash
-OPENAI_API_KEY=replace_with_your_openai_api_key
-OPENAI_MODEL=gpt-5-mini
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_TIMEOUT_SECONDS=45
-SCAMSHIELD_ALLOWED_ORIGINS=http://localhost:5173
+cp frontend/.env.example frontend/.env
 ```
 
-Frontend variables:
+Vite reads `frontend/.env` during local development. The Spring Boot backend reads variables from your shell, IDE run configuration, or hosting platform; use `backend/.env.example` as the safe list of names to configure.
 
-```bash
-VITE_API_BASE_URL=http://localhost:8080
-```
+### Backend
 
-Use `backend/.env.example` and `frontend/.env.example` as templates. Do not commit real `.env` files, API keys, tokens, credentials, or private keys.
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Yes | Secret OpenAI API key. Never expose it to the frontend or commit it. |
+| `OPENAI_MODEL` | No | Defaults to `gpt-5-mini`. |
+| `OPENAI_BASE_URL` | No | Defaults to `https://api.openai.com/v1`. |
+| `OPENAI_TIMEOUT_SECONDS` | No | Defaults to `45`. |
+| `SCAMSHIELD_ALLOWED_ORIGINS` | Production | Comma-separated frontend origins allowed by CORS. |
 
-## Installation
+### Frontend
 
-Prerequisites:
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | Yes | Public URL of the deployed Spring Boot API. Do not put OpenAI keys in Vite variables. |
+
+## Local Development
+
+### Prerequisites
 
 - Java 21
 - Maven 3.9+
 - Node.js 20.19+ or 22.12+
 - npm
-- OpenAI API key with access to `gpt-5-mini`
+- An OpenAI API key with GPT-5 Mini access
 
-## Running Backend
+### Start the Backend
 
 ```bash
 cd backend
-export OPENAI_API_KEY=your_key_here
+export OPENAI_API_KEY="your_key_here"
 mvn spring-boot:run
 ```
 
-Backend runs on `http://localhost:8080`.
+The API runs at `http://localhost:8080`.
 
-## Running Frontend
+### Start the Frontend
 
 ```bash
 cd frontend
@@ -301,59 +188,65 @@ npm install
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5173`.
+The client runs at `http://localhost:5173`.
 
-## Build
-
-Backend:
+### Validate
 
 ```bash
-cd backend
-mvn test
+cd backend && mvn test
+cd frontend && npm run build
 ```
 
-Frontend:
+## Deployment
 
-```bash
-cd frontend
-npm run build
-```
+### Backend on Render
 
-## Phase Scope
+1. Push the repository without `.env` files or real credentials.
+2. In Render, create a new Blueprint from this repository. The root `render.yaml` uses the backend Dockerfile because Java is deployed through Render's Docker runtime.
+3. During the Blueprint setup, provide `OPENAI_API_KEY` only in Render's secure environment-variable UI.
+4. Set `SCAMSHIELD_ALLOWED_ORIGINS` to the exact Vercel production URL, for example `https://your-project.vercel.app`.
+5. Deploy and copy the resulting Render HTTPS URL.
 
-Implemented in Phase 1:
+`render.yaml` declares `OPENAI_API_KEY` with `sync: false`, so the secret is never stored in the repository. Render's Blueprint documentation also recommends keeping secret values out of the YAML file. [Render Blueprint reference](https://render.com/docs/blueprint-spec) and [Render environment-variable guidance](https://render.com/docs/configure-environment-variables) describe this setup.
 
-- Screenshot upload
-- OpenAI Vision OCR
-- Extracted text display and editing
-- Paste-message workspace
+### Frontend on Vercel
 
-Implemented in Phase 2:
+1. Import this repository into Vercel and set the project Root Directory to `frontend`.
+2. Use `npm run build` as the build command and `dist` as the output directory.
+3. Add `VITE_API_BASE_URL` with the Render backend URL. This is public configuration, not a secret.
+4. Deploy, then update Render CORS with the deployed Vercel URL.
 
-- OpenAI Responses API scam analysis with GPT-5 Mini
-- Structured JSON output validated by the backend
-- Scam probability, confidence score, risk level, supported category, summary, explanation, and red flags
-- Premium animated analysis card for OCR or pasted text
+`frontend/vercel.json` rewrites client-side routes to `index.html`, which is required for direct visits to React Router paths such as `/coach` or `/history`. [Vercel's SPA rewrite guidance](https://examples.vercel.com/kb/guide/why-is-my-deployed-project-giving-404) explains this behavior.
 
-Implemented in Phase 3:
+## Security and Privacy
 
-- AI-powered Protection Center triggered after scam analysis
-- Recommended actions, prevention tips, and similar scam examples
-- Editable Safe Reply Generator with copy and regenerate actions
-- Structured Scam Report with risk details, detected red flags, actions, and generated time
-- Copyable reports and professional `ScamShield_Report.pdf` export
+- `.gitignore` excludes `.env`, credential-like files, certificates, keystores, private keys, build output, PDFs, and IDE state.
+- `backend/.dockerignore` prevents local environment files from entering the deployment image.
+- The OpenAI key is read only by the backend through `OPENAI_API_KEY`.
+- OpenAI Responses API requests use `store: false`.
+- Frontend analysis history, theme preference, and animation preference are stored only in the current browser's local storage.
+- Do not paste passwords, OTPs, PINs, CVVs, recovery codes, complete card numbers, or API keys into the app.
 
-Implemented in Phase 4:
+## Completed Checklist
 
-- Advanced Detection page with URL Checker, Email Analyzer, and Job Scam Detector tabs
-- Rule-based URL validation for HTTP, short URLs, IP addresses, risky TLDs, redirects, and look-alike domains
-- GPT-5 Mini structured analysis for URLs, phishing emails, and job offers
-- Unified Security Score and animated threat-indicator badges
-- API endpoints for URL, email, and job scam analysis
+- [x] OCR screenshot workflow and editable extracted text
+- [x] Structured scam analysis and protection center
+- [x] Downloadable scam report
+- [x] Advanced URL, email, and job-offer checks
+- [x] AI Safety Coach with live strict-JSON responses
+- [x] Awareness Hub with ten scam categories
+- [x] Local history, filtering, dashboard, and global search
+- [x] Theme, system preference, animation toggle, accessibility, and responsive UI polish
+- [x] Vercel and Render deployment configuration without committed secrets
 
-Not implemented in this phase:
+## Future Improvements
 
-- Chatbot
-- Dashboard
-- History
-- Statistics
+- Optional authenticated, encrypted cross-device history
+- Regional reporting links and incident-report templates
+- Browser extension for link warnings before navigation
+- More languages and accessibility localization
+- Automated end-to-end tests and CI deployment checks
+
+## License
+
+No license has been selected for this repository yet. Choose and add a license before public reuse or distribution.
