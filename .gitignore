@@ -1,0 +1,45 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*credentials*
+*secret*
+service-account*.json
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build and test output
+dist/
+build/
+coverage/
+target/
+*.class
+.next/
+.nuxt/
+out/
+
+# Logs and local runtime files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+ScamShield_Report.pdf
+.DS_Store
+
+# IDE/local workspace files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
