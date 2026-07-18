@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "./layouts/AppLayout";
+import AdvancedDetectionPage from "./pages/AdvancedDetectionPage";
 import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
 import { useTheme } from "./hooks/useTheme";
@@ -14,6 +15,7 @@ export default function App() {
         <Route element={<AppLayout theme={theme} onToggleTheme={toggleTheme} />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/app" element={<HomePage />} />
+          <Route path="/advanced" element={<AdvancedDetectionPage />} />
         </Route>
       </Routes>
       <Toaster

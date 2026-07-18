@@ -118,6 +118,33 @@ public class OpenAIResponseParser {
         }
     }
 
+    public AdvancedAiAnalysis parseUrlAnalysis(String responseBody) {
+        return parseAdvancedAnalysis(
+                responseBody,
+                "URL analysis",
+                "OpenAI could not analyze this URL",
+                "Unable to read the OpenAI URL analysis response"
+        );
+    }
+
+    public AdvancedAiAnalysis parseEmailAnalysis(String responseBody) {
+        return parseAdvancedAnalysis(
+                responseBody,
+                "email analysis",
+                "OpenAI could not analyze this email",
+                "Unable to read the OpenAI email analysis response"
+        );
+    }
+
+    public AdvancedAiAnalysis parseJobScamAnalysis(String responseBody) {
+        return parseAdvancedAnalysis(
+                responseBody,
+                "job scam analysis",
+                "OpenAI could not analyze this job offer",
+                "Unable to read the OpenAI job scam analysis response"
+        );
+    }
+
     public String parseErrorMessage(String responseBody) {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
@@ -125,6 +152,50 @@ public class OpenAIResponseParser {
             return StringUtils.hasText(message) ? message : "OpenAI request failed";
         } catch (IOException exception) {
             return "OpenAI request failed";
+        }
+    }
+
+    private AdvancedAiAnalysis parseAdvancedAnalysis(
+            String responseBody,
+            String operation,
+            String refusalMessage,
+            String malformedMessage
+    ) {
+        Supplier<OpenAIServiceException> malformedResponse = () -> new OpenAIServiceException(
+                HttpStatus.BAD_GATEWAY,
+                "OPENAI_RESPONSE_PARSE_FAILED",
+                malformedMessage
+        );
+
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            verifyCompleted(root, operation);
+
+            String outputText = findOutputText(root, refusalMessage);
+            if (!StringUtils.hasText(outputText)) {
+                throw malformedResponse.get();
+            }
+
+            JsonNode structuredOutput = objectMapper.readTree(outputText);
+            return new AdvancedAiAnalysis(
+                    readScore(structuredOutput, "riskScore", malformedResponse),
+                    readAdvancedRiskLevel(structuredOutput, malformedResponse),
+                    readRequiredText(structuredOutput, "category", malformedResponse),
+                    readScore(structuredOutput, "confidence", malformedResponse),
+                    readRequiredText(structuredOutput, "summary", malformedResponse),
+                    readRequiredText(structuredOutput, "explanation", malformedResponse),
+                    readStringList(structuredOutput, "redFlags", 0, malformedResponse),
+                    readRequiredText(structuredOutput, "recommendedAction", malformedResponse)
+            );
+        } catch (OpenAIServiceException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw new OpenAIServiceException(
+                    HttpStatus.BAD_GATEWAY,
+                    "OPENAI_RESPONSE_PARSE_FAILED",
+                    malformedMessage,
+                    exception
+            );
         }
     }
 
@@ -187,6 +258,18 @@ public class OpenAIResponseParser {
     ) {
         String riskLevel = readRequiredText(structuredOutput, "riskLevel", malformedResponse);
         if (!ScamAnalysisContract.RISK_LEVELS.contains(riskLevel)) {
+            throw malformedResponse.get();
+        }
+
+        return riskLevel;
+    }
+
+    private String readAdvancedRiskLevel(
+            JsonNode structuredOutput,
+            Supplier<OpenAIServiceException> malformedResponse
+    ) {
+        String riskLevel = readRequiredText(structuredOutput, "riskLevel", malformedResponse);
+        if (!AdvancedDetectionContract.RISK_LEVELS.contains(riskLevel)) {
             throw malformedResponse.get();
         }
 

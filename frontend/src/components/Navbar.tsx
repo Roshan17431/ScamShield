@@ -26,6 +26,10 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
           <NavLink to="/app" className="nav-link">
             Workspace
           </NavLink>
+          <NavLink to="/advanced" className="nav-link">
+            <span className="hidden sm:inline">Advanced Detection</span>
+            <span className="sm:hidden">Advanced</span>
+          </NavLink>
           <button type="button" className="icon-button" onClick={onToggleTheme} aria-label="Toggle color theme">
             <ThemeIcon size={18} />
           </button>

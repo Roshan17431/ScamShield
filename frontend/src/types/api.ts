@@ -57,3 +57,53 @@ export interface GeneratedScamReport {
   analysis: ScamAnalysisResponse;
   report: ScamReportResponse;
 }
+
+export type AdvancedRiskLevel = ScamRiskLevel | "SAFE";
+
+export type ThreatSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export interface ThreatIndicator {
+  label: string;
+  severity: ThreatSeverity;
+}
+
+export interface AdvancedDetectionResponse {
+  securityScore: number;
+  riskLevel: AdvancedRiskLevel;
+  category: string;
+  confidence: number;
+  summary: string;
+  explanation: string;
+  recommendation: string;
+  threatIndicators: ThreatIndicator[];
+}
+
+export interface UrlAnalysisRequest {
+  url: string;
+}
+
+export interface UrlAnalysisResponse extends AdvancedDetectionResponse {
+  analyzedUrls: string[];
+  safe: boolean;
+  reasons: string[];
+}
+
+export interface EmailAnalysisRequest {
+  sender: string;
+  subject: string;
+  body: string;
+}
+
+export interface EmailAnalysisResponse extends AdvancedDetectionResponse {
+  redFlags: string[];
+}
+
+export interface JobScamRequest {
+  message: string;
+}
+
+export interface JobScamResponse extends AdvancedDetectionResponse {
+  redFlags: string[];
+}
+
+export type AdvancedDetectionResult = UrlAnalysisResponse | EmailAnalysisResponse | JobScamResponse;

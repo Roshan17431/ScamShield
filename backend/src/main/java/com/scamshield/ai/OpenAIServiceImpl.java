@@ -2,6 +2,8 @@ package com.scamshield.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.scamshield.dto.EmailAnalysisRequestDTO;
+import com.scamshield.dto.JobScamRequestDTO;
 import com.scamshield.dto.ProtectionRequestDTO;
 import com.scamshield.dto.ProtectionResponseDTO;
 import com.scamshield.dto.ScamAnalysisResponseDTO;
@@ -14,6 +16,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
 import java.util.Map;
+import java.util.List;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,8 @@ public class OpenAIServiceImpl implements OpenAIService {
     private final PromptBuilder promptBuilder;
 
     private final ProtectionPromptBuilder protectionPromptBuilder;
+
+    private final AdvancedPromptBuilder advancedPromptBuilder;
 
     private final OpenAIResponseParser responseParser;
 
@@ -64,6 +69,36 @@ public class OpenAIServiceImpl implements OpenAIService {
                 responseParser::parseProtectionAdvice,
                 "protection advice",
                 "OpenAI could not generate protection advice"
+        );
+    }
+
+    @Override
+    public AdvancedAiAnalysis analyzeUrls(List<String> urls, List<String> ruleFindings) {
+        return executeRequest(
+                advancedPromptBuilder.buildUrlAnalysisRequest(config, urls, ruleFindings),
+                responseParser::parseUrlAnalysis,
+                "URL analysis",
+                "OpenAI could not analyze the URL"
+        );
+    }
+
+    @Override
+    public AdvancedAiAnalysis analyzeEmail(EmailAnalysisRequestDTO request, List<String> ruleFindings) {
+        return executeRequest(
+                advancedPromptBuilder.buildEmailAnalysisRequest(config, request, ruleFindings),
+                responseParser::parseEmailAnalysis,
+                "email analysis",
+                "OpenAI could not analyze the email"
+        );
+    }
+
+    @Override
+    public AdvancedAiAnalysis analyzeJobOffer(JobScamRequestDTO request, List<String> ruleFindings) {
+        return executeRequest(
+                advancedPromptBuilder.buildJobScamAnalysisRequest(config, request, ruleFindings),
+                responseParser::parseJobScamAnalysis,
+                "job scam analysis",
+                "OpenAI could not analyze the job offer"
         );
     }
 

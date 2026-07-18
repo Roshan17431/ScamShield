@@ -2,7 +2,7 @@
 
 Think Before You Click. Verify Before You Trust.
 
-ScamShield AI is a Phase 3 full-stack application for reviewing suspicious content before taking action. Users can upload a suspicious screenshot for OpenAI Vision OCR or paste a message, receive a structured GPT-5 Mini scam-risk assessment, and get AI-powered guidance for safer next steps.
+ScamShield AI is a Phase 4 full-stack application for reviewing suspicious content before taking action. Users can extract screenshot text, assess suspicious messages, receive AI-powered protection guidance, and safely analyze URLs, emails, and job offers with deterministic checks plus GPT-5 Mini.
 
 ## Features
 
@@ -17,6 +17,10 @@ ScamShield AI is a Phase 3 full-stack application for reviewing suspicious conte
 - Personalized Protection Center with recommended actions, prevention tips, and similar scam examples
 - Editable Safe Reply Generator with one-click copy and regeneration
 - Professional scam report with copy and downloadable `ScamShield_Report.pdf` export
+- Advanced URL Safety Checker with HTTP/HTTPS, short-link, redirect, IP-address, and look-alike-domain checks
+- Email Scam Detection with sender, urgency, external-link, and sensitive-request indicators
+- Job Scam Detection for upfront-fee, unrealistic-salary, urgency, and suspicious-link signals
+- Unified 0–100 Security Score with animated threat-indicator badges
 - Spring Boot API with DTOs, services, validation, and global exception handling
 - Environment-only OpenAI configuration with no hardcoded keys
 
@@ -52,11 +56,11 @@ ScamShield AI is a Phase 3 full-stack application for reviewing suspicious conte
 frontend/
   src/
     assets/       Generated project assets
-    components/   Reusable UI components
-    hooks/        Upload, theme, OCR, scam analysis, and protection state
+    components/   Reusable UI and advanced result components
+    hooks/        Upload, theme, OCR, scam analysis, protection, and advanced detection state
     layouts/      Shared app shell
-    pages/        Landing and workspace pages
-    services/     Axios API clients and OpenAI-backed requests
+    pages/        Landing, workspace, and advanced detection pages
+    services/     Axios API clients and backend analysis requests
     types/        Shared TypeScript contracts
     utils/        Browser-side validation, clipboard, and PDF report helpers
 
@@ -104,6 +108,24 @@ Request body:
 ```json
 {
   "text": "Dear customer, your SBI account has been blocked. Verify immediately at http://secure-bank-login.xyz"
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "message": "Message analyzed successfully",
+  "data": {
+    "riskLevel": "CRITICAL",
+    "scamProbability": 98,
+    "confidence": 96,
+    "category": "Banking Phishing",
+    "summary": "This message is highly likely to be a phishing attempt.",
+    "explanation": "The message impersonates a bank, creates urgency, and directs users to a suspicious website.",
+    "redFlags": ["Creates urgency", "Suspicious website"]
+  }
 }
 ```
 
@@ -161,28 +183,75 @@ Success response:
 
 The frontend combines this protection data with the Phase 2 analysis to render the Scam Report and export a professional PDF named `ScamShield_Report.pdf`.
 
-Success response:
+### URL Safety Checker
+
+`POST /api/v1/scam/url-analysis`
+
+The `url` field accepts one URL or pasted text containing multiple URLs. The backend extracts HTTP, HTTPS, short, and embedded URLs before performing deterministic and AI analysis.
+
+```json
+{
+  "url": "http://secure-bank-login.xyz"
+}
+```
 
 ```json
 {
   "success": true,
-  "message": "Message analyzed successfully",
+  "message": "URL analyzed successfully",
   "data": {
+    "analyzedUrls": ["http://secure-bank-login.xyz"],
+    "safe": false,
+    "securityScore": 18,
     "riskLevel": "CRITICAL",
-    "scamProbability": 98,
-    "confidence": 96,
-    "category": "Banking Phishing",
-    "summary": "This message is highly likely to be a phishing attempt.",
-    "explanation": "The message impersonates a bank, creates urgency, and directs users to a suspicious website.",
-    "redFlags": [
-      "Creates urgency",
-      "Suspicious website",
-      "Requests account verification",
-      "Impersonates a bank"
-    ]
+    "category": "Phishing URL",
+    "confidence": 95,
+    "summary": "Highly suspicious phishing domain.",
+    "explanation": "The address combines unsafe transport with phishing-style domain signals.",
+    "reasons": ["Uses HTTP instead of HTTPS", "Potentially impersonates a known brand"],
+    "recommendation": "Do not open the URL. Visit the organization through a verified address instead.",
+    "threatIndicators": [{"label": "HTTP", "severity": "HIGH"}]
   }
 }
 ```
+
+### Email Scam Detection
+
+`POST /api/v1/scam/email-analysis`
+
+```json
+{
+  "sender": "support@sbi-security.xyz",
+  "subject": "Urgent Account Verification",
+  "body": "Click here immediately to keep your account active."
+}
+```
+
+The response includes `securityScore`, `riskLevel`, `category`, `confidence`, `summary`, `explanation`, `redFlags`, `recommendation`, and `threatIndicators`.
+
+### Job Scam Detection
+
+`POST /api/v1/scam/job-analysis`
+
+```json
+{
+  "message": "Congratulations! Earn Rs. 80,000 per month working only 2 hours daily. Registration fee Rs. 500."
+}
+```
+
+The response includes `securityScore`, `riskLevel`, `category`, `confidence`, `summary`, `explanation`, `redFlags`, `recommendation`, and `threatIndicators`.
+
+### Unified Security Score
+
+The score is safety-oriented: higher values are safer.
+
+| Security score | Risk level |
+| --- | --- |
+| 0–20 | Critical |
+| 21–40 | High |
+| 41–60 | Medium |
+| 61–80 | Low |
+| 81–100 | Safe |
 
 ## Environment Variables
 
@@ -274,10 +343,17 @@ Implemented in Phase 3:
 - Structured Scam Report with risk details, detected red flags, actions, and generated time
 - Copyable reports and professional `ScamShield_Report.pdf` export
 
+Implemented in Phase 4:
+
+- Advanced Detection page with URL Checker, Email Analyzer, and Job Scam Detector tabs
+- Rule-based URL validation for HTTP, short URLs, IP addresses, risky TLDs, redirects, and look-alike domains
+- GPT-5 Mini structured analysis for URLs, phishing emails, and job offers
+- Unified Security Score and animated threat-indicator badges
+- API endpoints for URL, email, and job scam analysis
+
 Not implemented in this phase:
 
-- URL analysis
-- Email analysis
-- Job scam detection
 - Chatbot
 - Dashboard
+- History
+- Statistics

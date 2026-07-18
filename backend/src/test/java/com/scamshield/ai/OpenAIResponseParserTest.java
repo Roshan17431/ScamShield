@@ -107,4 +107,21 @@ class OpenAIResponseParserTest {
         assertThat(advice.getSafeReply()).isEqualTo("I will verify this through the official bank website.");
         assertThat(advice.getSimilarScams()).containsExactly("Fake KYC Update", "Account Suspension");
     }
+
+    @Test
+    void parsesStructuredUrlAnalysis() {
+        String responseBody = """
+                {
+                  "status": "completed",
+                  "output_text": "{\\"riskScore\\":92,\\"riskLevel\\":\\"CRITICAL\\",\\"category\\":\\"Phishing URL\\",\\"confidence\\":95,\\"summary\\":\\"This URL is highly suspicious.\\",\\"explanation\\":\\"The domain imitates a bank and uses unsafe transport.\\",\\"redFlags\\":[\\"Uses HTTP\\",\\"Imitates a bank\\"],\\"recommendedAction\\":\\"Do not open the URL.\\"}"
+                }
+                """;
+
+        var analysis = parser.parseUrlAnalysis(responseBody);
+
+        assertThat(analysis.riskScore()).isEqualTo(92);
+        assertThat(analysis.riskLevel()).isEqualTo("CRITICAL");
+        assertThat(analysis.category()).isEqualTo("Phishing URL");
+        assertThat(analysis.redFlags()).containsExactly("Uses HTTP", "Imitates a bank");
+    }
 }
